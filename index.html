@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0E13">
+<meta name="description" content="MCHLauncherForPy —— 基于 Python 的《我的世界》第三方启动器。版本、账号、Java、模组、整合包与基岩版，收进同一个窗口。">
+<title>MCHLauncherForPy · 一个启动器，管好你的整个方块世界</title>
+<link rel="icon" href="assets/img/favicon.ico" type="image/x-icon">
+<link rel="icon" href="assets/img/app-icon.png" type="image/png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- ============ 图标库 ============ -->
+<svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v3h16v-3"/></symbol>
+  <symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M9 3h6v3a2 2 0 1 0 4 0V3h2v6h-3a2 2 0 1 0 0 4h3v8H3v-6h3a2 2 0 1 0 0-4H3V3h6Z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v4m6-4v4M9 19v4m6-4v4M1 9h4m-4 6h4m14-6h4m-4 6h4"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4h7a3 3 0 0 1 3 3v14a3 3 0 0 0-3-3H4V4Z"/><path d="M20 4h-3a3 3 0 0 0-3 3v14a3 3 0 0 1 3-3h3V4Z"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15m6-12v15"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2-6.2 3.2L7 14.2l-5-4.9 6.9-1L12 2Z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5M3 17l9 5 9-5"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H12a2 2 0 0 1 0-4h6a3 3 0 0 0 3-3 7 7 0 0 0-9-7Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m0 0-6-6m6 6-6 6"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12"/><path d="M16 8V4H4v12h4"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16"/><path d="m6 9 3 3-3 3m6 0h5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></symbol>
+</svg>
+
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<!-- ============ 导航 ============ -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#home" aria-label="MCHLauncherForPy 首页">
+      <img class="brand-logo" src="assets/img/app-icon.png" alt="" width="38" height="38">
+      <span class="brand-text">MCH<span>Launcher</span><small>ForPy</small></span>
+    </a>
+
+    <nav class="nav-links" aria-label="主导航">
+      <a href="#features" data-nav="features">功能</a>
+      <a href="#ui" data-nav="ui">界面</a>
+      <a href="#download" data-nav="download">下载</a>
+      <a href="#faq" data-nav="faq">常见问题</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="nav-author" href="https://space.bilibili.com/3546815194467241" target="_blank" rel="noopener noreferrer">
+        作者主页 <svg class="ic ic-sm" aria-hidden="true"><use href="#i-external"/></svg>
+      </a>
+      <a class="btn btn-primary btn-sm" href="#download">获取启动器</a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="mobileMenu">
+        <svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu" hidden>
+    <a href="#features">功能</a>
+    <a href="#ui">界面</a>
+    <a href="#download">下载</a>
+    <a href="#faq">常见问题</a>
+    <a href="https://github.com/huanfangzhe/MCHLauncher/" target="_blank" rel="noopener noreferrer">获取源码 ↗</a>
+    <a href="https://space.bilibili.com/3546815194467241" target="_blank" rel="noopener noreferrer">作者 B 站主页 ↗</a>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="home">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="hero-fade" aria-hidden="true"></div>
+
+  <!-- 像素方块装饰 -->
+  <div class="pixel-deco deco-a" aria-hidden="true"></div>
+  <div class="pixel-deco deco-b" aria-hidden="true"></div>
+  <div class="pixel-deco deco-c" aria-hidden="true"></div>
+
+  <div class="wrap hero-inner">
+    <div class="hero-copy">
+      <div class="eyebrow"><span class="blink-dot"></span> v2.0.5 <span class="eyebrow-sep">/</span> Windows 7 及以上 <span class="eyebrow-sep">/</span> 第三方启动器</div>
+      <h1>一个启动器，<br>管好你的<span class="hl">整个方块世界</span></h1>
+      <p class="hero-sub">版本、账号、Java、模组、整合包，还有基岩版——全收进同一个窗口。基于 Python 编写，前端是原生 HTML/CSS/JS，可打包成单个 exe 直接运行。</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="#download">
+          <svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> 下载 Windows 版
+        </a>
+        <a class="btn btn-ghost btn-lg" href="#features">
+          看看它能做什么 <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </a>
+      </div>
+      <ul class="hero-trust">
+        <li><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg> 微软正版 / 外置 / 离线登录</li>
+        <li><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg> 四大模组加载器</li>
+        <li><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg> 单文件 exe，免安装</li>
+      </ul>
+    </div>
+
+    <!-- 启动器界面示意（CSS 绘制） -->
+    <div class="hero-visual">
+      <div class="float-chip chip-java"><span class="chip-dot"></span> Java 已自动识别</div>
+      <div class="window mock-hero" role="img" aria-label="MCHLauncherForPy 启动器主界面示意：左侧导航栏、中间版本列表、底部启动按钮">
+        <div class="window-bar">
+          <div class="win-dots"><i></i><i></i><i></i></div>
+          <span class="win-title">MCHLauncherForPy</span>
+          <span class="win-ctrl">— &nbsp; □ &nbsp; ×</span>
+        </div>
+        <div class="window-body">
+          <aside class="mock-side">
+            <div class="mock-side-item is-active"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-grid"/></svg> 首页</div>
+            <div class="mock-side-item"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-box"/></svg> 版本</div>
+            <div class="mock-side-item"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-download"/></svg> 下载</div>
+            <div class="mock-side-item"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-puzzle"/></svg> 模组</div>
+            <div class="mock-side-item"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-star"/></svg> 收藏</div>
+            <div class="mock-side-item mt-auto"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-settings"/></svg> 设置</div>
+          </aside>
+          <div class="mock-main">
+            <div class="mock-head"><strong>版本列表</strong><span class="mock-pill">3 个版本</span></div>
+            <div class="mock-version is-selected">
+              <span class="ver-icon ver-fabric">F</span>
+              <span class="ver-meta"><b>1.20.1 · Fabric</b><small>Java 17 · 4096 MB</small></span>
+              <span class="ver-tag">已选中</span>
+            </div>
+            <div class="mock-version">
+              <span class="ver-icon ver-vanilla">▣</span>
+              <span class="ver-meta"><b>1.21.1 · 原版</b><small>Java 21 · 自动</small></span>
+            </div>
+            <div class="mock-version">
+              <span class="ver-icon ver-forge">◆</span>
+              <span class="ver-meta"><b>1.20.1 · Forge</b><small>Java 17 · 4096 MB</small></span>
+            </div>
+            <div class="mock-launch" id="mockLaunch"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-zap"/></svg> 启动游戏</div>
+            <div class="mock-progress" id="mockProgress"><i></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="float-chip chip-mod"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-download"/></svg> 模组下载完成 <b>12</b></div>
+    </div>
+  </div>
+
+  <a class="scroll-cue" href="#stats" aria-label="向下滚动"><span>SCROLL</span><i></i></a>
+</section>
+
+<!-- ============ 数据条 ============ -->
+<section class="stats" id="stats" aria-label="功能概览">
+  <div class="wrap stats-grid">
+    <div class="stat"><b data-count="4">4</b><span>种模组加载器<small>Fabric · Quilt · Forge · NeoForge</small></span></div>
+    <div class="stat"><b data-count="2">2</b><span>大模组资源源<small>Modrinth · CurseForge</small></span></div>
+    <div class="stat"><b data-count="3">3</b><span>种账号登录方式<small>微软正版 · 外置 · 离线</small></span></div>
+    <div class="stat"><b data-count="1">1</b><span>个 exe 就能跑<small>单文件打包，免安装</small></span></div>
+  </div>
+</section>
+
+<!-- ============ 核心特性 ============ -->
+<section class="section features" id="features">
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <span class="kicker">// 核心能力</span>
+      <h2>从打开到进游戏，<br><span class="hl-soft">不用再切换五个工具</span></h2>
+      <p>启动器负责把散落在各处的版本、依赖、账号与模组整理成一份清单。你要做的，只是选中版本然后点「启动游戏」。</p>
+    </header>
+
+    <!-- 特性 1 -->
+    <article class="feature-row" data-reveal>
+      <div class="feature-text">
+        <span class="feature-no">01 / VERSION</span>
+        <h3>版本与启动，<br>每一步都看得见</h3>
+        <p>自动扫描 <code>.minecraft/versions</code>，也支持把任意位置的 versions 目录加进列表。启动前自动校验并补全 libraries / assets / natives，进度实时反馈，日志随时可查，还能一键终止游戏。</p>
+        <ul class="tick-list">
+          <li>版本重命名、删除、打开目录、自定义图标</li>
+          <li>每个版本独立保存 Java、内存与附加启动参数</li>
+          <li>可选「游戏启动后关闭启动器」</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mini-panel">
+          <div class="mini-head"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-box"/></svg> 版本设置 <span class="mini-dots">···</span></div>
+          <div class="mini-row"><span>游戏 Java</span><b class="ok">自动匹配 ✓</b></div>
+          <div class="mini-row"><span>分配内存</span><b>4096 MB</b></div>
+          <div class="mini-bar"><i style="width:62%"></i></div>
+          <div class="mini-row mini-row-sm"><span>依赖校验</span><b class="ok">已补全</b></div>
+          <div class="mini-row mini-row-sm"><span>启动日志</span><b>可查看</b></div>
+          <div class="mini-log"><span>[+] libraries 已就绪</span><span>[+] assets 已就绪</span><span>[.] 等待启动…</span></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 特性 2 -->
+    <article class="feature-row is-reverse" data-reveal>
+      <div class="feature-text">
+        <span class="feature-no">02 / MODS</span>
+        <h3>下载、装模组、导整合包，<br>一条流水线</h3>
+        <p>原版版本直接下载，Fabric / Quilt / Forge / NeoForge 一键安装，Fabric API 也可以顺手装上。模组从 Modrinth、CurseForge 搜索下载，jar / zip 拖进窗口就能导入；<code>.mrpack</code>、CurseForge zip、MCHL / PCL 导出的整合包都能读，也能导出成 zip。</p>
+        <ul class="tick-list">
+          <li>模组启用 / 禁用用 <code>.disabled</code> 后缀实现，不改文件内容</li>
+          <li>模组、整合包、资源包、光影、数据包一键收藏</li>
+          <li>收藏保存在 <code>favorites.json</code>，最多 200 条</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mini-panel mini-download">
+          <div class="mini-head"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-download"/></svg> 下载中心 <span class="mini-dots">···</span></div>
+          <div class="loader-row"><img src="assets/img/fabric.png" alt="" width="26" height="26"><span>Fabric Loader</span><b class="tag-green">已安装</b></div>
+          <div class="loader-row"><img src="assets/img/forge.png" alt="" width="26" height="26"><span>Forge</span><b class="tag-blue">可安装</b></div>
+          <div class="loader-row"><span class="loader-sq sq-quilt">Q</span><span>Quilt</span><b class="tag-blue">可安装</b></div>
+          <div class="loader-row"><span class="loader-sq sq-neo">N</span><span>NeoForge</span><b class="tag-blue">可安装</b></div>
+          <div class="mini-search"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-puzzle"/></svg> 搜索 Modrinth / CurseForge…</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 特性 3 -->
+    <article class="feature-row" data-reveal>
+      <div class="feature-text">
+        <span class="feature-no">03 / ACCOUNT &amp; JAVA</span>
+        <h3>账号和 Java，<br>交给它自己找</h3>
+        <p>微软正版走设备码流程，不需要内嵌浏览器或本地回调端口；外置登录支持 Yggdrasil / authlib-injector，会自动下载并缓存 <code>authlib-injector.jar</code>；离线账号支持自定义皮肤，头像裁剪用纯标准库实现。</p>
+        <ul class="tick-list">
+          <li>每次启动后台全盘扫描系统 Java，结果缓存到 <code>Setup.ini</code></li>
+          <li>扫描期间显示「已检查 N 个目录 / 已找到 M 个 Java」</li>
+          <li>按版本要求自动下载对应 Java，也能手动指定 java.exe</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mini-panel mini-account">
+          <div class="mini-head"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-user"/></svg> 账号 <span class="mini-dots">···</span></div>
+          <div class="account-row"><img src="assets/img/steve.png" alt="" width="38" height="38"><span><b>Steve</b><small>微软正版 · 已登录</small></span><i class="acc-dot"></i></div>
+          <div class="account-row"><img src="assets/img/alex.png" alt="" width="38" height="38"><span><b>Alex</b><small>离线账号 · 自定义皮肤</small></span></div>
+          <div class="mini-divider"></div>
+          <div class="java-row"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-cpu"/></svg><span>Java 扫描</span><b class="ok">已找到 3 个</b></div>
+          <div class="mini-log"><span>[.] 已检查 12,480 个目录</span><span>[+] Java 21 / 17 / 8 已加入列表</span></div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 功能网格 ============ -->
+<section class="section section-alt bento-section">
+  <div class="wrap">
+    <header class="section-head section-head-row" data-reveal>
+      <div>
+        <span class="kicker">// 还有这些</span>
+        <h2>细节藏在<span class="hl-soft">边边角角</span></h2>
+      </div>
+      <p>不只是「能启动」。Wiki、种子地图、基岩版、界面自定义，都被塞进了这个不到 30 MB 的窗口里。</p>
+    </header>
+
+    <div class="bento">
+      <article class="bento-card bento-wide" data-reveal>
+        <span class="bento-no">01</span>
+        <div class="bento-icon icon-pink"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg></div>
+        <h3>Wiki 内置浏览器</h3>
+        <p>正文不是 iframe，而是把真实的浏览器窗口用 <code>SetParent</code> 嵌进界面，因此不会被站点的 X-Frame-Options / Cloudflare 策略拦截，默认直接打开 zh.minecraft.wiki。</p>
+        <div class="bento-tags"><span>多面板</span><span>拖拽调整大小</span><span>拖出变独立窗口</span><span>方块 / 合成 / 附魔 快捷入口</span></div>
+      </article>
+
+      <article class="bento-card" data-reveal>
+        <span class="bento-no">02</span>
+        <div class="bento-icon icon-blue"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg></div>
+        <h3>种子地图</h3>
+        <p>输入种子、选好游戏版本与维度，直接用启动器窗口打开 Chunkbase 种子地图，也可以交给浏览器。</p>
+      </article>
+
+      <article class="bento-card" data-reveal>
+        <span class="bento-no">03</span>
+        <div class="bento-icon icon-green"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg></div>
+        <h3>基岩版也能管</h3>
+        <p>检测本地已安装的 Minecraft for Windows 并启动，支持 Store 渠道 / 镜像源下载安装包或安装本地包，还能直接打开存档目录。</p>
+      </article>
+
+      <article class="bento-card" data-reveal>
+        <span class="bento-no">04</span>
+        <div class="bento-icon icon-lime"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg></div>
+        <h3>侧边栏自己排</h3>
+        <p>设置 → 个性化 → 管理侧边栏：点卡片开关板块，按住拖动调整顺序（设置固定保留），顺序写进 Setup.ini。</p>
+      </article>
+
+      <article class="bento-card" data-reveal>
+        <span class="bento-no">05</span>
+        <div class="bento-icon icon-gold"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg></div>
+        <h3>长得由你决定</h3>
+        <p>主题色、自定义背景图与模糊度、默认板块、首页小组件、窗口圆角与自适应尺寸，窄窗口下设置页导航自动改为顶部横排。</p>
+      </article>
+
+      <article class="bento-card" data-reveal>
+        <span class="bento-no">06</span>
+        <div class="bento-icon icon-purple"><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg></div>
+        <h3>收藏夹</h3>
+        <p>模组 / 整合包 / 资源包 / 光影 / 数据包详情页一键收藏，下载页顶部直接回到详情页，点 × 取消。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 界面预览 ============ -->
+<section class="section ui-section" id="ui">
+  <div class="wrap ui-layout">
+    <div class="ui-copy" data-reveal>
+      <span class="kicker">// 界面</span>
+      <h2>像一个真的<br><span class="hl-soft">桌面应用</span></h2>
+      <p>界面由原生 Web 技术承载，所以窗口有圆角、能自适应尺寸，也能把背景换成你自己的图。设置页与版本设置共用一套右侧板块导航，来回切换不用重新找位置。</p>
+      <ul class="ui-list">
+        <li><span class="ui-check"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg></span><span><b>主题色可调</b><small>整个界面跟着换色</small></span></li>
+        <li><span class="ui-check"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg></span><span><b>自定义背景与模糊度</b><small>下图的樱花林就是程序内置背景图</small></span></li>
+        <li><span class="ui-check"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg></span><span><b>侧边栏可增删、可拖动排序</b><small>显示项与顺序本地保存</small></span></li>
+        <li><span class="ui-check"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg></span><span><b>窗口圆角与自适应布局</b><small>窄窗口自动切换导航形态</small></span></li>
+      </ul>
+    </div>
+
+    <div class="ui-visual" data-reveal>
+      <div class="window mock-ui" role="img" aria-label="启动器界面示意：自定义樱花背景、左侧导航、版本与下载板块">
+        <div class="window-bar">
+          <div class="win-dots"><i></i><i></i><i></i></div>
+          <span class="win-title">MCHLauncherForPy</span>
+          <span class="win-ctrl">— &nbsp; □ &nbsp; ×</span>
+        </div>
+        <div class="ui-window-body">
+          <aside class="ui-side">
+            <div class="ui-side-item is-active"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-grid"/></svg> 首页</div>
+            <div class="ui-side-item"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-box"/></svg> 版本</div>
+            <div class="ui-side-item"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-download"/></svg> 下载</div>
+            <div class="ui-side-item"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-puzzle"/></svg> 模组</div>
+            <div class="ui-side-item"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-book"/></svg> Wiki</div>
+            <div class="ui-side-item"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-map"/></svg> 种子地图</div>
+            <div class="ui-side-item mt-auto"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-settings"/></svg> 设置</div>
+          </aside>
+          <div class="ui-content">
+            <div class="ui-tabs"><span class="is-active">游戏</span><span>个性化</span><span>启动器</span><span>关于</span></div>
+            <div class="ui-widgets">
+              <div class="ui-widget widget-launch"><small>当前版本</small><b>1.20.1 · Fabric</b><span class="widget-btn">启动游戏 →</span></div>
+              <div class="ui-widget"><small>账号</small><b>Steve</b><span class="widget-sub">微软正版 · 已登录</span></div>
+              <div class="ui-widget"><small>Java</small><b>自动匹配</b><span class="widget-sub">已找到 3 个运行时</span></div>
+              <div class="ui-widget widget-wide"><small>最近下载</small><div class="widget-mod"><span class="mod-sq"></span> 模组与整合包 <b class="ok">已完成</b></div><div class="widget-mod"><span class="mod-sq mod-sq2"></span> 原版版本 <b class="ok">已完成</b></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="ui-caption">界面示意 · 使用程序内置背景图绘制</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 下载与快速开始 ============ -->
+<section class="section download-section" id="download">
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <span class="kicker">// 获取</span>
+      <h2>拿到 exe，<span class="hl-soft">双击就能开</span></h2>
+      <p>单文件打包，不用装 Python、不用配环境。第一次启动会解包到临时目录，稍等几秒。</p>
+    </header>
+
+    <div class="download-layout">
+      <!-- 下载卡片 -->
+      <div class="download-card" data-reveal>
+        <div class="dl-top">
+          <img src="assets/img/app-icon.png" alt="MCHLauncherForPy 图标" width="72" height="72">
+          <div>
+            <span class="dl-badge">最新构建</span>
+            <h3>MCHLauncherForPy · Windows 版</h3>
+            <p>v2.0.5 · Windows 7 及以上（x64）· 单文件免安装</p>
+          </div>
+        </div>
+        <ul class="dl-points">
+          <li><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg> Windows 7 及以上（x64）</li>
+          <li><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg> 单文件 exe，不用装 Python、不用配环境</li>
+          <li><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg> 游戏账号自备：正版 / 外置 / 离线均可</li>
+        </ul>
+        <a class="btn btn-primary btn-block" href="https://huanfang.lanzouc.com/b00mqqncij" target="_blank" rel="noopener noreferrer">
+          <svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> 前往蓝奏云下载
+        </a>
+        <div class="dl-password">
+          <span class="pw-label">提取密码</span>
+          <b>4626</b>
+          <button class="copy-btn" type="button" data-copy="4626" aria-label="复制提取密码"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-copy"/></svg> 复制</button>
+        </div>
+        <a class="dl-alt" href="https://github.com/huanfangzhe/MCHLauncher/" target="_blank" rel="noopener noreferrer">
+          获取源码 · GitHub <svg class="ic ic-sm" aria-hidden="true"><use href="#i-external"/></svg>
+        </a>
+        <a class="dl-alt" href="https://space.bilibili.com/3546815194467241" target="_blank" rel="noopener noreferrer">
+          或在作者 B 站主页获取更新动态 <svg class="ic ic-sm" aria-hidden="true"><use href="#i-external"/></svg>
+        </a>
+      </div>
+
+      <!-- 快速开始 -->
+      <div class="quickstart" data-reveal>
+        <h3><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg> 想从源码跑？</h3>
+        <p>先在 GitHub 获取源码，按 <code>requirements.txt</code> 安装依赖即可。开发环境为 Python 3.14，最低 3.10+。</p>
+        <a class="source-link" href="https://github.com/huanfangzhe/MCHLauncher/" target="_blank" rel="noopener noreferrer">
+          <svg class="ic ic-sm" aria-hidden="true"><use href="#i-external"/></svg> 获取源码 · github.com/huanfangzhe/MCHLauncher
+        </a>
+        <div class="code-block">
+          <div class="code-head"><span>终端</span><button class="copy-btn" type="button" data-copy="pip install -r requirements.txt&#10;python main.py"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-copy"/></svg> 复制</button></div>
+          <pre><code><span class="c-dim"># 安装依赖并启动</span>
+pip install -r requirements.txt
+python main.py</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span>打包为 exe</span><button class="copy-btn" type="button" data-copy="python -m PyInstaller MCHLauncherForPy.spec --noconfirm --clean --distpath exe --workpath build"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-copy"/></svg> 复制</button></div>
+          <pre><code><span class="c-dim"># 也可以直接双击 build.bat</span>
+python -m PyInstaller MCHLauncherForPy.spec --noconfirm --clean --distpath exe --workpath build</code></pre>
+        </div>
+        <div class="env-table">
+          <div><span>系统</span><b>Windows 7 及以上（x64）</b></div>
+          <div><span>Python</span><b>3.10+（开发环境 3.14）</b></div>
+          <div><span>依赖</span><b>见 requirements.txt</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 常见问题 ============ -->
+<section class="section section-alt faq-section" id="faq">
+  <div class="wrap faq-layout">
+    <header class="section-head faq-head" data-reveal>
+      <span class="kicker">// 常见问题</span>
+      <h2>遇到状况，<br><span class="hl-soft">先看这里</span></h2>
+      <p>整理自项目 README。更多细节可以查看项目仓库里的说明文档。</p>
+      <div class="faq-note"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>本项目为个人开发的第三方启动器，与 Mojang Studios、Microsoft 无隶属关系。请使用正版账号登录官方服务器。</span></div>
+    </header>
+
+    <div class="faq-list" data-reveal>
+      <details class="faq-item" open>
+        <summary>提示找不到 Java？<svg class="ic" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+        <div class="faq-body"><p>在设置页或版本设置里指定 java 路径，或使用「下载 Java」。游戏版本要求的 Java 大版本不匹配时，启动器会给出提示。每次启动也会在后台全盘扫描系统 Java 并缓存结果。</p></div>
+      </details>
+      <details class="faq-item">
+        <summary>单文件 exe 首次启动有点慢？<svg class="ic" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+        <div class="faq-body"><p>单文件模式每次启动都要解包到临时目录，属于正常现象。可用 <code>MCHL_ONEDIR=1</code> 生成文件夹版，启动更快，但需要整个文件夹一起分发。</p></div>
+      </details>
+      <details class="faq-item">
+        <summary>杀毒软件报毒？<svg class="ic" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+        <div class="faq-body"><p>PyInstaller 打包的程序被误报较常见。可以添加到信任，或者用文件夹版自行打包。</p></div>
+      </details>
+      <details class="faq-item">
+        <summary>数据都存在哪里？<svg class="ic" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+        <div class="faq-body"><p>启动器在<strong>自身所在目录</strong>创建 <code>.minecraft</code>（旧版 <code>MCHL</code> 目录会自动迁移）：版本、依赖库、资源、日志、设置 <code>Setup.ini</code>、收藏 <code>favorites.json</code>、首页小组件 <code>home.json</code> 都在这里。设置页「启动器 → 数据目录」可以直接打开。</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 底部 CTA ============ -->
+<section class="final-cta">
+  <div class="final-bg" aria-hidden="true"></div>
+  <div class="wrap final-inner" data-reveal>
+    <span class="kicker">// READY?</span>
+    <h2>下一个方块世界，<br>从这次启动开始</h2>
+    <p>版本、模组、账号都已经准备好了。剩下的，只是点一下「启动游戏」。</p>
+    <div class="final-cta-btns">
+      <a class="btn btn-primary btn-lg" href="#download"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> 下载 Windows 版</a>
+      <a class="btn btn-ghost btn-lg" href="#features">再看一遍功能 <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ 页脚 ============ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href="#home"><img class="brand-logo" src="assets/img/app-icon.png" alt="" width="44" height="44"><span class="brand-text">MCH<span>Launcher</span><small>ForPy</small></span></a>
+        <p>基于 Python 的《我的世界》第三方启动器。<br>界面用原生 HTML/CSS/JS 编写，业务逻辑在 Python 侧。</p>
+        <a class="footer-bili" href="https://space.bilibili.com/3546815194467241" target="_blank" rel="noopener noreferrer"><span class="bili-mark">bilibili</span> 开发者：幻方者 <svg class="ic ic-sm" aria-hidden="true"><use href="#i-external"/></svg></a>
+      </div>
+      <div class="footer-col">
+        <h4>产品</h4>
+        <a href="#features">核心功能</a>
+        <a href="#ui">界面预览</a>
+        <a href="#download">下载与运行</a>
+        <a href="#faq">常见问题</a>
+      </div>
+      <div class="footer-col">
+        <h4>技术</h4>
+        <a href="#download">环境要求</a>
+        <a href="#download">快速开始</a>
+        <a href="https://github.com/huanfangzhe/MCHLauncher/" target="_blank" rel="noopener noreferrer">获取源码 ↗</a>
+        <a href="https://zh.minecraft.wiki" target="_blank" rel="noopener noreferrer">中文 Minecraft Wiki ↗</a>
+      </div>
+      <div class="footer-col footer-col-note">
+        <h4>关于</h4>
+        <p>个人开发的非官方工具，与 Mojang Studios、Microsoft 无隶属关系。《Minecraft》相关名称、素材与版权归其各自所有者所有。</p>
+        <p>请使用正版账号登录官方服务器。</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 幻方者 · MCHLauncherForPy</span>
+      <span class="footer-pixels" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <span>Made with blocks &amp; Python</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
