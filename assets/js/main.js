@@ -140,6 +140,109 @@
     });
   });
 
+  /* ---------- 最新版本：直连版本服务，按结果决定下载按钮显隐 ----------
+     GET https://mchlauncherversions.netlify.app/ 是唯一的请求目标，不经任何中转。
+     返回 {"versions":2.0.5,"link":"https://..."}
+       versions = 最新版本号 → 所有 [data-version]
+       link     = 最新版下载直链 → 「下载」按钮
+     取到：显示「下载」按钮（与网盘按钮并排），写入实时版本号与直链。
+     取不到：隐藏「下载」，只留铺满整行的「全版本网盘下载」，
+             不展示任何可能过期的内置直链。
+     注：该服务响应未带 Access-Control-Allow-Origin，跨域 / file:// 下
+     浏览器会拦截响应体（HTTP 200 也读不到），因此默认走隐藏分支。 */
+  var VERSION_API = 'https://mchlauncherversions.netlify.app/';
+  var MAX_ATTEMPTS = 2;
+  var dlLatest = $('#dlLatest');
+  var dlActions = $('#dlActions');
+  var dlBadge = $('#dlBadge');
+  var versionStatus = $('#versionStatus');
+  var versionLabels = $$('[data-version]');
+
+  function setVersionStatus(text, state) {
+    if (!versionStatus) return;
+    versionStatus.className = 'dl-status' + (state ? ' is-' + state : '');
+    var dot = document.createElement('span');
+    dot.className = 'dl-status-dot';
+    dot.setAttribute('aria-hidden', 'true');
+    versionStatus.textContent = '';
+    versionStatus.appendChild(dot);
+    versionStatus.appendChild(document.createTextNode(' ' + text));
+  }
+  function isSafeHttpLink(url) {
+    return typeof url === 'string' && /^https?:\/\//i.test(url);
+  }
+  /* 兼容返回体里版本号未加引号（非严格 JSON）的情况 */
+  function parseVersionPayload(text) {
+    try {
+      var o = JSON.parse(text);
+      return { version: o.versions || o.version, link: o.link || o.url };
+    } catch (e) {
+      var v = /"versions"\s*:\s*"?([^",}\s]+)"?/.exec(text);
+      var l = /"link"\s*:\s*"([^"]+)"/.exec(text);
+      return { version: v && v[1], link: l && l[1] };
+    }
+  }
+  /* 取不到版本服务：隐藏「下载」按钮，只保留网盘按钮 */
+  function hideLatestDownload(reason) {
+    if (dlLatest) {
+      dlLatest.hidden = true;
+      dlLatest.removeAttribute('href');
+    }
+    if (dlActions) dlActions.classList.add('is-single');
+    if (dlBadge) { dlBadge.textContent = '版本未同步'; dlBadge.classList.add('is-stale'); }
+    setVersionStatus('暂时无法获取最新版本，请从全版本网盘下载', 'warn');
+    if (window.console && window.console.info) {
+      window.console.info('[MCHL] 版本服务读取失败（' + reason + '）。若响应缺少 Access-Control-Allow-Origin，请在该 Netlify 站点发布目录添加 _headers 文件，内容为：/* 与 Access-Control-Allow-Origin: *');
+    }
+  }
+  /* 取到版本服务：显示「下载」按钮并恢复双按钮布局 */
+  function showLatestDownload(link, v) {
+    versionLabels.forEach(function (el) { el.textContent = v; });
+    if (dlLatest) {
+      dlLatest.href = link;
+      dlLatest.hidden = false;
+    }
+    if (dlActions) dlActions.classList.remove('is-single');
+    if (dlBadge) { dlBadge.textContent = '最新版本'; dlBadge.classList.remove('is-stale'); }
+    setVersionStatus('已同步最新版本 v' + v, 'ok');
+  }
+
+  if (dlLatest && window.fetch) {
+    var versionSettled = false;
+    var attempts = 0;
+    var versionTimer = window.setTimeout(function () {
+      if (versionSettled) return;
+      versionSettled = true;
+      hideLatestDownload('响应超时');
+    }, 9000);
+
+    var requestVersion = function () {
+      attempts++;
+      window.fetch(VERSION_API, { method: 'GET', cache: 'no-store' }).then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      }).then(function (text) {
+        if (versionSettled) return;
+        var data = parseVersionPayload(text);
+        if (data.version === undefined || data.version === null || data.version === '' || !isSafeHttpLink(data.link)) {
+          throw new Error('版本数据不完整');
+        }
+        versionSettled = true;
+        window.clearTimeout(versionTimer);
+        showLatestDownload(data.link, String(data.version));
+      }).catch(function (err) {
+        if (versionSettled) return;
+        if (attempts < MAX_ATTEMPTS) { window.setTimeout(requestVersion, 1200); return; }
+        versionSettled = true;
+        window.clearTimeout(versionTimer);
+        hideLatestDownload(err && err.message ? err.message : '网络或跨域限制');
+      });
+    };
+    requestVersion();
+  } else {
+    hideLatestDownload('浏览器不支持 fetch');
+  }
+
   /* ---------- FAQ 手风琴（同一时间只展开一项） ---------- */
   var faqItems = $$('.faq-item');
   faqItems.forEach(function (item) {

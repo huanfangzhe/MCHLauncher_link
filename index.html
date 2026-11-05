@@ -91,7 +91,7 @@
 
   <div class="wrap hero-inner">
     <div class="hero-copy">
-      <div class="eyebrow"><span class="blink-dot"></span> v2.0.5 <span class="eyebrow-sep">/</span> Windows 7 及以上 <span class="eyebrow-sep">/</span> 第三方启动器</div>
+      <div class="eyebrow"><span class="blink-dot"></span> v<span data-version>2.0.5</span> <span class="eyebrow-sep">/</span> Windows 7 及以上 <span class="eyebrow-sep">/</span> 第三方启动器</div>
       <h1>一个启动器，<br>管好你的<span class="hl">整个方块世界</span></h1>
       <p class="hero-sub">版本、账号、Java、模组、整合包，还有基岩版——全收进同一个窗口。基于 Python 编写，前端是原生 HTML/CSS/JS，可打包成单个 exe 直接运行。</p>
       <div class="hero-cta">
@@ -369,9 +369,9 @@
         <div class="dl-top">
           <img src="assets/img/app-icon.png" alt="MCHLauncherForPy 图标" width="72" height="72">
           <div>
-            <span class="dl-badge">最新构建</span>
+            <span class="dl-badge is-stale" id="dlBadge">版本未同步</span>
             <h3>MCHLauncherForPy · Windows 版</h3>
-            <p>v2.0.5 · Windows 7 及以上（x64）· 单文件免安装</p>
+            <p>v<span data-version>2.0.5</span> · Windows 7 及以上（x64）· 单文件免安装</p>
           </div>
         </div>
         <ul class="dl-points">
@@ -379,13 +379,19 @@
           <li><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg> 单文件 exe，不用装 Python、不用配环境</li>
           <li><svg class="ic ic-sm" aria-hidden="true"><use href="#i-check"/></svg> 游戏账号自备：正版 / 外置 / 离线均可</li>
         </ul>
-        <a class="btn btn-primary btn-block" href="https://huanfang.lanzouc.com/b00mqqncij" target="_blank" rel="noopener noreferrer">
-          <svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> 前往蓝奏云下载
-        </a>
+        <div class="dl-actions is-single" id="dlActions">
+          <a class="btn btn-primary" id="dlLatest" hidden target="_blank" rel="noopener noreferrer">
+            <svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> 下载
+          </a>
+          <a class="btn btn-ghost" href="https://huanfang.lanzouc.com/b00mqqncij" target="_blank" rel="noopener noreferrer">
+            <svg class="ic" aria-hidden="true"><use href="#i-box"/></svg> 全版本网盘下载
+          </a>
+        </div>
+        <p class="dl-status" id="versionStatus" role="status" aria-live="polite"><span class="dl-status-dot" aria-hidden="true"></span> 若未显示「下载」按钮，请从全版本网盘获取最新版本</p>
         <div class="dl-password">
-          <span class="pw-label">提取密码</span>
+          <span class="pw-label">全版本网盘提取密码</span>
           <b>4626</b>
-          <button class="copy-btn" type="button" data-copy="4626" aria-label="复制提取密码"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-copy"/></svg> 复制</button>
+          <button class="copy-btn" type="button" data-copy="4626" aria-label="复制全版本网盘提取密码"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-copy"/></svg> 复制</button>
         </div>
         <a class="dl-alt" href="https://github.com/huanfangzhe/MCHLauncher/" target="_blank" rel="noopener noreferrer">
           获取源码 · GitHub <svg class="ic ic-sm" aria-hidden="true"><use href="#i-external"/></svg>
