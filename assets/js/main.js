@@ -140,18 +140,21 @@
     });
   });
 
-  /* ---------- 最新版本：直连版本服务，按结果决定下载按钮显隐 ----------
-     GET https://mchlauncherversions.netlify.app/ 是唯一的请求目标，不经任何中转。
+  /* ---------- 最新版本：直连优先，自有代理兜底，按结果决定下载按钮显隐 ----------
      返回 {"versions":2.0.5,"link":"https://..."}
        versions = 最新版本号 → 所有 [data-version]
        link     = 最新版下载直链 → 「下载」按钮
-     取到：显示「下载」按钮（与网盘按钮并排），写入实时版本号与直链。
-     取不到：隐藏「下载」，只留铺满整行的「全版本网盘下载」，
-             不展示任何可能过期的内置直链。
-     注：该服务响应未带 Access-Control-Allow-Origin，跨域 / file:// 下
-     浏览器会拦截响应体（HTTP 200 也读不到），因此默认走隐藏分支。 */
-  var VERSION_API = 'https://mchlauncherversions.netlify.app/';
-  var MAX_ATTEMPTS = 2;
+     通道 1 直连版本服务本身；通道 2 是作者提供的 hfzchat.qzz.io/proxy，
+     它转发同一份数据并带 Access-Control-Allow-Origin: *，
+     可解决直连在浏览器跨域 / file:// 下 200 却读不到响应体的问题。
+     取到（任一通道）：显示「下载」按钮，写入实时版本号与直链。
+     两条都取不到：隐藏「下载」，只留铺满整行的「全版本网盘下载」，
+                   不展示任何可能过期的内置直链。
+     换地址只需改下面 VERSION_ENDPOINTS 数组，顺序即优先级。 */
+  var VERSION_ENDPOINTS = [
+    { name: '直连', url: 'https://mchlauncherversions.netlify.app/' },
+    { name: '代理', url: 'https://hfzchat.qzz.io/proxy' }
+  ];
   var dlLatest = $('#dlLatest');
   var dlActions = $('#dlActions');
   var dlBadge = $('#dlBadge');
@@ -192,7 +195,7 @@
     if (dlBadge) { dlBadge.textContent = '版本未同步'; dlBadge.classList.add('is-stale'); }
     setVersionStatus('暂时无法获取最新版本，请从全版本网盘下载', 'warn');
     if (window.console && window.console.info) {
-      window.console.info('[MCHL] 版本服务读取失败（' + reason + '）。若响应缺少 Access-Control-Allow-Origin，请在该 Netlify 站点发布目录添加 _headers 文件，内容为：/* 与 Access-Control-Allow-Origin: *');
+      window.console.info('[MCHL] 版本服务与代理均读取失败（' + reason + '）。请检查两条通道是否可达；若想让直连单独可用，可在该 Netlify 站点发布目录添加 _headers 文件，内容为：/* 与 Access-Control-Allow-Origin: *');
     }
   }
   /* 取到版本服务：显示「下载」按钮并恢复双按钮布局 */
@@ -209,16 +212,26 @@
 
   if (dlLatest && window.fetch) {
     var versionSettled = false;
-    var attempts = 0;
+    var endpointIndex = 0;
+    var lastError = '';
     var versionTimer = window.setTimeout(function () {
       if (versionSettled) return;
       versionSettled = true;
       hideLatestDownload('响应超时');
     }, 9000);
 
+    /* 按 VERSION_ENDPOINTS 顺序串行尝试：直连失败立即换代理，不等待重试 */
     var requestVersion = function () {
-      attempts++;
-      window.fetch(VERSION_API, { method: 'GET', cache: 'no-store' }).then(function (res) {
+      if (versionSettled) return;
+      if (endpointIndex >= VERSION_ENDPOINTS.length) {
+        versionSettled = true;
+        window.clearTimeout(versionTimer);
+        hideLatestDownload(lastError || '所有通道均不可用');
+        return;
+      }
+      var endpoint = VERSION_ENDPOINTS[endpointIndex++];
+      /* 只发简单 GET，不带自定义头，避免 OPTIONS 预检 */
+      window.fetch(endpoint.url, { method: 'GET' }).then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.text();
       }).then(function (text) {
@@ -230,12 +243,13 @@
         versionSettled = true;
         window.clearTimeout(versionTimer);
         showLatestDownload(data.link, String(data.version));
+        if (window.console && window.console.info) {
+          window.console.info('[MCHL] 版本数据来源：' + endpoint.name + '（' + endpoint.url + '）');
+        }
       }).catch(function (err) {
         if (versionSettled) return;
-        if (attempts < MAX_ATTEMPTS) { window.setTimeout(requestVersion, 1200); return; }
-        versionSettled = true;
-        window.clearTimeout(versionTimer);
-        hideLatestDownload(err && err.message ? err.message : '网络或跨域限制');
+        lastError = endpoint.name + '：' + (err && err.message ? err.message : '网络或跨域限制');
+        requestVersion();
       });
     };
     requestVersion();
